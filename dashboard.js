@@ -1,4 +1,4 @@
-// FocusTube Dashboard Controller - Redesigned UI
+// FocusTube Dashboard Controller - Full Interactive Build
 
 document.addEventListener('DOMContentLoaded', async () => {
   const chartContainer = document.getElementById('chartContainer');
@@ -19,6 +19,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentHealthVal = document.getElementById('currentHealthVal');
   const currentHealthGrade = document.getElementById('currentHealthGrade');
 
+  // Time Range & Filter Buttons
+  const timeBtns = document.querySelectorAll('.time-btn');
+  const filterBtns = document.querySelectorAll('.filter-pill');
+  const filterAllBtn = document.getElementById('filterAllBtn');
+
+  // Tooltip Elements
+  const chartTooltipCard = document.getElementById('chartTooltipCard');
+  const ttGoalTitle = document.getElementById('ttGoalTitle');
+  const ttDate = document.getElementById('ttDate');
+  const ttScore = document.getElementById('ttScore');
+  const ttOnCount = document.getElementById('ttOnCount');
+  const ttOffCount = document.getElementById('ttOffCount');
+  const ttCloseBtn = document.getElementById('ttCloseBtn');
+
+  // Global State
+  let rawSessionHistory = [];
+  let currentTimeRange = '7d'; // '7d', '30d', 'all'
+  let currentFilter = 'all';     // 'all', 'high', 'low'
+
   // Format timestamp into clean date string
   function formatDate(timestamp) {
     if (!timestamp) return 'Recent';
@@ -31,9 +50,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Filter history by time range ('7d', '30d', 'all')
+  function getFilteredByTime(history) {
+    if (!history || history.length === 0) return [];
+    if (currentTimeRange === 'all') return history;
+
+    const now = Date.now();
+    const days = currentTimeRange === '30d' ? 30 : 7;
+    const cutoff = now - (days * 24 * 60 * 60 * 1000);
+
+    return history.filter(session => {
+      if (!session.timestamp) return true;
+      return session.timestamp >= cutoff;
+    });
+  }
+
+  // Filter history by focus score filter ('all', 'high', 'low')
+  function getFilteredByScore(history) {
+    if (!history || history.length === 0) return [];
+    if (currentFilter === 'high') {
+      return history.filter(session => {
+        const score = typeof session.focusScore === 'number' ? session.focusScore : 100;
+        return score > 70;
+      });
+    }
+    if (currentFilter === 'low') {
+      return history.filter(session => {
+        const score = typeof session.focusScore === 'number' ? session.focusScore : 100;
+        return score < 50;
+      });
+    }
+    return history;
+  }
+
   // Calculate & Update Overview Stat Cards
   function updateStatCards(history) {
-    if (!history || history.length === 0) return;
+    if (!history || history.length === 0) {
+      if (avgScoreVal) avgScoreVal.textContent = '0%';
+      if (avgScoreBar) avgScoreBar.style.width = '0%';
+      if (currentHealthVal) currentHealthVal.textContent = '0% Overall Focus';
+      if (currentHealthGrade) currentHealthGrade.textContent = 'N/A';
+      if (totalTimeVal) totalTimeVal.textContent = '0m';
+      if (sessionsCountText) sessionsCountText.textContent = 'Across 0 sessions';
+      if (avgSessionTimePill) avgSessionTimePill.textContent = '0m avg / session';
+      if (totalVideosVal) totalVideosVal.textContent = '0';
+      if (onTopicPill) onTopicPill.textContent = '0 On-Topic';
+      if (offTopicPill) offTopicPill.textContent = '0 Intercepted';
+      if (topDistractionCard) topDistractionCard.style.display = 'none';
+      return;
+    }
 
     let totalScoreSum = 0;
     let totalMinutes = 0;
@@ -55,7 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         distractionCounts[cat] = (distractionCounts[cat] || 0) + 1;
       }
 
-      // Parse minutes if string like "10 mins" or "15m"
       if (typeof session.totalTime === 'string') {
         const num = parseInt(session.totalTime, 10);
         if (!isNaN(num)) totalMinutes += num;
@@ -66,11 +130,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const sessionCount = history.length;
     const avgScore = Math.round(totalScoreSum / sessionCount);
-    
+
     if (avgScoreVal) avgScoreVal.textContent = `${avgScore}%`;
     if (avgScoreBar) avgScoreBar.style.width = `${avgScore}%`;
 
-    // Health score
     if (currentHealthVal) currentHealthVal.textContent = `${avgScore}% Overall Focus`;
     if (currentHealthGrade) {
       if (avgScore >= 90) currentHealthGrade.textContent = 'A+';
@@ -80,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       else currentHealthGrade.textContent = 'D';
     }
 
-    // Study Time
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
     const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -90,13 +152,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sessionsCountText) sessionsCountText.textContent = `Across ${sessionCount} sessions`;
     if (avgSessionTimePill) avgSessionTimePill.textContent = `${avgMinsPerSession}m avg / session`;
 
-    // Videos Filtered
     const totalVideos = totalOnCount + totalOffCount;
     if (totalVideosVal) totalVideosVal.textContent = totalVideos;
     if (onTopicPill) onTopicPill.textContent = `${totalOnCount} On-Topic`;
     if (offTopicPill) offTopicPill.textContent = `${totalOffCount} Intercepted`;
 
-    // Top Distraction
     let maxDistraction = null;
     let maxDistCount = 0;
     for (const [cat, count] of Object.entries(distractionCounts)) {
@@ -116,14 +176,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Render Stacked Bar Chart for last 7 sessions
+  // Render Stacked Bar Chart for sessions in time range
   function renderChart(history) {
     if (!history || history.length === 0) {
-      chartContainer.innerHTML = '<div class="empty-history">No sessions recorded yet. Start a session in the extension popup!</div>';
+      chartContainer.innerHTML = '<div class="empty-history">No sessions recorded in this time range.</div>';
       return;
     }
 
-    // Take last 7 sessions
     const last7Sessions = history.slice(-7);
 
     chartContainer.innerHTML = last7Sessions.map((session, index) => {
@@ -131,17 +190,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       const onCount = session.onTopicCount || (score >= 50 ? 5 : 2);
       const offCount = session.offTopicCount || (score < 50 ? 4 : 1);
       const total = onCount + offCount;
-      
+
       const onPct = total > 0 ? Math.round((onCount / total) * 100) : score;
       const offPct = 100 - onPct;
 
       const sessionNum = `S${index + 1}`;
       const goalStr = session.goal || 'Session Goal';
+      const dateStr = formatDate(session.timestamp);
+
+      const safeGoal = goalStr.replace(/"/g, '&quot;');
 
       return `
-        <div class="chart-bar-group">
+        <div class="chart-bar-group" 
+             data-goal="${safeGoal}" 
+             data-date="${dateStr}" 
+             data-score="${score}" 
+             data-on="${onCount}" 
+             data-off="${offCount}"
+             title="Click to view details for ${sessionNum}">
           <div class="bar-top-percent">${score}%</div>
-          <div class="stacked-bar-track" title="Session ${index + 1}: ${goalStr} (${score}% focus)">
+          <div class="stacked-bar-track">
             <div class="bar-segment-off" style="height: ${offPct}%;"></div>
             <div class="bar-segment-on" style="height: ${onPct}%;"></div>
           </div>
@@ -151,6 +219,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       `;
     }).join('');
+
+    // Attach click event listeners to bar groups for tooltip popup
+    document.querySelectorAll('.chart-bar-group').forEach(barGroup => {
+      barGroup.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const goal = barGroup.getAttribute('data-goal');
+        const date = barGroup.getAttribute('data-date');
+        const score = barGroup.getAttribute('data-score');
+        const on = barGroup.getAttribute('data-on');
+        const off = barGroup.getAttribute('data-off');
+
+        ttGoalTitle.textContent = goal;
+        ttDate.textContent = date;
+        ttScore.textContent = `${score}%`;
+        ttOnCount.textContent = on;
+        ttOffCount.textContent = off;
+
+        // Position tooltip card relative to chart wrapper
+        const barRect = barGroup.getBoundingClientRect();
+        const wrapperRect = document.querySelector('.chart-wrapper').getBoundingClientRect();
+        
+        let leftPos = barRect.left - wrapperRect.left - 80;
+        leftPos = Math.max(10, Math.min(leftPos, wrapperRect.width - 230));
+
+        chartTooltipCard.style.left = `${leftPos}px`;
+        chartTooltipCard.style.bottom = `65px`;
+        chartTooltipCard.style.display = 'flex';
+      });
+    });
   }
 
   // Render past session cards in reverse chronological order
@@ -158,13 +255,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!history || history.length === 0) {
       historyGrid.innerHTML = `
         <div class="empty-history">
-          No session history found. Click <strong>End Session</strong> in the FocusTube extension popup to generate your first AI session summary!
+          No session history found matching current filters.
         </div>
       `;
       return;
     }
 
-    // Reverse chronological order
     const reverseHistory = history.slice().reverse();
 
     historyGrid.innerHTML = reverseHistory.map(session => {
@@ -237,15 +333,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).join('');
   }
 
+  // Update full UI based on time range and filter states
+  function updateDashboardView() {
+    const timeFilteredHistory = getFilteredByTime(rawSessionHistory);
+
+    // Update filter All Sessions button label count
+    if (filterAllBtn) {
+      filterAllBtn.textContent = `All Sessions (${timeFilteredHistory.length})`;
+    }
+
+    updateStatCards(timeFilteredHistory);
+    renderChart(timeFilteredHistory);
+
+    const fullyFilteredHistory = getFilteredByScore(timeFilteredHistory);
+    renderHistoryList(fullyFilteredHistory);
+  }
+
+  // Event Listeners for Time Range Buttons ('7 Days', '30 Days', 'All Time')
+  timeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      timeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const text = btn.textContent.trim().toLowerCase();
+      if (text.includes('30')) currentTimeRange = '30d';
+      else if (text.includes('all')) currentTimeRange = 'all';
+      else currentTimeRange = '7d';
+
+      if (chartTooltipCard) chartTooltipCard.style.display = 'none';
+      updateDashboardView();
+    });
+  });
+
+  // Event Listeners for Filter Pills ('All Sessions', 'High Focus', 'Distracted')
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filterAttr = btn.getAttribute('data-filter');
+      if (filterAttr) {
+        currentFilter = filterAttr;
+      } else {
+        const text = btn.textContent.trim().toLowerCase();
+        if (text.includes('high')) currentFilter = 'high';
+        else if (text.includes('distracted')) currentFilter = 'low';
+        else currentFilter = 'all';
+      }
+
+      updateDashboardView();
+    });
+  });
+
+  // Tooltip close button
+  if (ttCloseBtn) {
+    ttCloseBtn.addEventListener('click', () => {
+      chartTooltipCard.style.display = 'none';
+    });
+  }
+
+  // Dismiss tooltip on click outside
+  document.addEventListener('click', (e) => {
+    if (chartTooltipCard && chartTooltipCard.style.display !== 'none') {
+      if (!chartTooltipCard.contains(e.target) && !e.target.closest('.chart-bar-group')) {
+        chartTooltipCard.style.display = 'none';
+      }
+    }
+  });
+
   // Load session history from chrome.storage.local
   async function loadDashboardData() {
     try {
       const data = await chrome.storage.local.get(['sessionHistory']);
-      const history = data.sessionHistory || [];
-
-      updateStatCards(history);
-      renderChart(history);
-      renderHistoryList(history);
+      rawSessionHistory = data.sessionHistory || [];
+      updateDashboardView();
     } catch (err) {
       chartContainer.innerHTML = '<div class="empty-history">Failed to load history data.</div>';
       historyGrid.innerHTML = '<div class="empty-history">Failed to load session history.</div>';

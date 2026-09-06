@@ -209,6 +209,7 @@
     .time-btn.active {
       background: var(--accent-red);
       color: #ffffff;
+      box-shadow: 0 2px 10px rgba(255, 42, 85, 0.3);
     }
 
     .btn-open-yt {
@@ -454,6 +455,12 @@
       gap: 8px;
       flex: 1;
       max-width: 54px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .chart-bar-group:hover {
+      transform: translateY(-3px);
     }
 
     .bar-top-percent {
@@ -499,17 +506,93 @@
       color: var(--text-main);
     }
 
-    .bar-goal-name {
-      font-size: 10px;
-      color: var(--text-dim);
+    /* Chart Tooltip Popup Card */
+    .chart-tooltip-card {
+      position: absolute;
+      z-index: 100;
+      background: rgba(15, 21, 35, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: ttFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes ttFadeIn {
+      from { opacity: 0; transform: translateY(6px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .tooltip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tt-goal {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 60px;
+    }
+
+    .tt-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px;
+    }
+
+    .tt-close-btn:hover { color: var(--text-main); }
+
+    .tooltip-meta {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .tooltip-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 6px 8px;
       text-align: center;
     }
 
-    /* Past Session Summaries */
+    .tt-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tt-lbl {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .tt-val {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tt-val.green { color: var(--accent-green-light); }
+    .tt-val.red { color: #f87171; }
+
+    /* Past Session Summaries Filters */
     .filter-pills-row {
       display: flex;
       align-items: center;
@@ -533,8 +616,9 @@
     }
 
     .filter-pill.active {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.12);
       color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .history-grid {
@@ -777,9 +861,9 @@
         </div>
 
         <div class="time-toggle-group">
-          <button class="time-btn active">7 Days</button>
-          <button class="time-btn">30 Days</button>
-          <button class="time-btn">All Time</button>
+          <button class="time-btn active" data-range="7d">7 Days</button>
+          <button class="time-btn" data-range="30d">30 Days</button>
+          <button class="time-btn" data-range="all">All Time</button>
         </div>
 
         <a href="https://www.youtube.com" target="_blank" class="btn-open-yt">
@@ -909,6 +993,32 @@
         <div id="chartContainer" class="chart-container">
           <!-- Dynamically populated by dashboard.js -->
         </div>
+
+        <!-- Chart Bar Click Tooltip/Popover -->
+        <div id="chartTooltipCard" class="chart-tooltip-card" style="display: none;">
+          <div class="tooltip-header">
+            <span id="ttGoalTitle" class="tt-goal">--</span>
+            <button id="ttCloseBtn" class="tt-close-btn">✕</button>
+          </div>
+          <div class="tooltip-meta">
+            <span id="ttDate">--</span>
+          </div>
+          <div class="tooltip-stats">
+            <div class="tt-stat-item">
+              <span class="tt-lbl">Focus</span>
+              <span id="ttScore" class="tt-val green">--</span>
+            </div>
+            <div class="tt-stat-item">
+              <span class="tt-lbl">On-Topic</span>
+              <span id="ttOnCount" class="tt-val green">--</span>
+            </div>
+            <div class="tt-stat-item">
+              <span class="tt-lbl">Off-Topic</span>
+              <span id="ttOffCount" class="tt-val red">--</span>
+            </div>
+          </div>
+        </div>
+
         <div class="y-axis-labels">
           <span>100%</span>
           <span>75%</span>
@@ -936,9 +1046,9 @@
         </div>
 
         <div class="filter-pills-row">
-          <button class="filter-pill active">All Sessions (3)</button>
-          <button class="filter-pill" style="color: var(--accent-green-light);">• High Focus (>70%)</button>
-          <button class="filter-pill" style="color: #f87171;">• Distracted (<50%)</button>
+          <button class="filter-pill active" data-filter="all" id="filterAllBtn">All Sessions</button>
+          <button class="filter-pill" data-filter="high" id="filterHighBtn" style="color: var(--accent-green-light);">• High Focus (>70%)</button>
+          <button class="filter-pill" data-filter="low" id="filterLowBtn" style="color: #f87171;">• Distracted (<50%)</button>
         </div>
       </div>
 
