@@ -401,6 +401,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Export CSV Button
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+  // Export session history to CSV file
+  function exportHistoryToCSV() {
+    if (!rawSessionHistory || rawSessionHistory.length === 0) {
+      alert('No session history available to export.');
+      return;
+    }
+
+    const headers = ['Timestamp', 'Date', 'Session Goal', 'Duration', 'Focus Score (%)', 'On-Topic Videos', 'Off-Topic Videos', 'Top Distraction', 'AI Insight'];
+    
+    const rows = rawSessionHistory.map(session => {
+      const timestamp = session.timestamp ? new Date(session.timestamp).toISOString() : '';
+      const dateStr = formatDate(session.timestamp);
+      const goal = `"${(session.goal || '').replace(/"/g, '""')}"`;
+      const duration = `"${(session.totalTime || '').replace(/"/g, '""')}"`;
+      const score = typeof session.focusScore === 'number' ? session.focusScore : 100;
+      const onCount = session.onTopicCount || 0;
+      const offCount = session.offTopicCount || 0;
+      const distraction = `"${(session.topDistractionCategory || 'None').replace(/"/g, '""')}"`;
+      const insight = `"${(session.observation || '').replace(/"/g, '""')}"`;
+
+      return [timestamp, `"${dateStr}"`, goal, duration, score, onCount, offCount, distraction, insight].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FocusTube_Session_History_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      exportHistoryToCSV();
+    });
+  }
+
   // Load session history from chrome.storage.local
   async function loadDashboardData() {
     try {
