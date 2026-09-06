@@ -351,6 +351,8 @@ function scheduleClassification(force = false) {
     return;
   }
 
+  setupMutationObserver();
+
   setTimeout(() => {
     classifyCurrentVideo(force);
   }, 1000);

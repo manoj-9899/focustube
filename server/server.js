@@ -16,11 +16,9 @@ const groq = new Groq({ apiKey: apiKey || 'dummy-key' });
 
 // Fast & active Groq models in prioritized order
 const MODELS = [
-  'groq/compound-mini',
+  'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
-  'groq/compound',
-  'openai/gpt-oss-20b',
-  'llama-3.3-70b-versatile'
+  'mixtral-8x7b-32768'
 ];
 
 // In-memory classification cache

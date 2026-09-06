@@ -1,0 +1,9 @@
+{
+  "name": "focustube",
+  "version": "1.0.0",
+  "description": "FocusTube - YouTube Focus & AI Goal Tracker Chrome Extension",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "node server/server.js"
+  }
+}
