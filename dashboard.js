@@ -135,19 +135,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const onPct = total > 0 ? Math.round((onCount / total) * 100) : score;
       const offPct = 100 - onPct;
 
-      const sessionNum = `$${index + 1}`;
+      const sessionNum = `S${index + 1}`;
       const goalStr = session.goal || 'Session Goal';
 
       return `
         <div class="chart-bar-group">
           <div class="bar-top-percent">${score}%</div>
           <div class="stacked-bar-track" title="Session ${index + 1}: ${goalStr} (${score}% focus)">
-            <div class="bar-segment-on" style="height: ${onPct}%;"></div>
             <div class="bar-segment-off" style="height: ${offPct}%;"></div>
+            <div class="bar-segment-on" style="height: ${onPct}%;"></div>
           </div>
           <div class="bar-bottom-labels">
             <span class="bar-session-id">${sessionNum}</span>
-            <span class="bar-goal-name" title="${goalStr}">${goalStr}</span>
           </div>
         </div>
       `;
