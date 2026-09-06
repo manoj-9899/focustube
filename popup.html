@@ -4,37 +4,71 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FocusTube</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
+  <div class="rainbow-top-bar"></div>
   <div class="app-container">
     <!-- Header -->
     <header>
       <div class="brand">
-        <div class="brand-icon">
-          <img src="icons/icon-48.png" width="22" height="22" alt="FocusTube Logo">
+        <div class="brand-icon-wrapper">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </div>
+          <span class="icon-active-dot"></span>
         </div>
-        <div class="brand-title">Focus<span>Tube</span></div>
+        <div class="brand-info">
+          <div class="brand-title">Focus<span class="highlight">Tube</span></div>
+          <div class="brand-status">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="statusText">Active Monitor</span>
+          </div>
+        </div>
       </div>
       <div class="header-right">
-        <button id="viewHistoryBtn" class="history-link-btn" title="View Weekly Dashboard">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+        <button id="viewHistoryBtn" class="dashboard-btn" title="View Weekly Dashboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
           <span>Dashboard</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
         </button>
-        <div class="status-badge">
-          <div id="statusDot" class="status-dot"></div>
-          <span id="statusText">Checking...</span>
-        </div>
       </div>
     </header>
 
     <!-- Session Goal Setup Card -->
-    <div class="card">
-      <div class="card-title">Session Goal</div>
+    <div class="card goal-setup-card">
+      <div class="card-header-row">
+        <div class="card-title-group">
+          <svg class="title-icon red-lightning" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          <span class="card-title-text">SESSION GOAL</span>
+        </div>
+        <div class="enforcing-status">
+          <span class="enforcing-dot"></span>
+          <span>Enforcing</span>
+        </div>
+      </div>
       <form id="goalForm" class="form-group">
-        <div class="input-wrapper">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
           <input 
             type="text" 
             id="goalInput" 
@@ -42,10 +76,11 @@
             autocomplete="off"
             required
           />
+          <button type="button" id="clearGoalInputBtn" class="clear-input-btn" title="Clear input" style="display: none;">✕</button>
         </div>
 
-        <button type="submit" id="startBtn" class="btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <button type="submit" id="startBtn" class="btn-primary-gradient">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8 5v14l11-7z"/>
           </svg>
           <span>Start Session</span>
@@ -55,47 +90,69 @@
 
     <!-- Current Video Title & Classification Card -->
     <div class="card video-card">
-      <div class="card-title">
-        <span>Current Video</span>
-        <button id="refreshVideoBtn" class="refresh-btn" title="Refresh title detection">
-          <svg viewBox="0 0 24 24">
-            <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+      <div class="card-header-row">
+        <div class="card-title-group">
+          <svg class="title-icon blue-cam" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+          </svg>
+          <span class="card-title-text">CURRENT VIDEO</span>
+        </div>
+        <button id="refreshVideoBtn" class="icon-refresh-btn" title="Refresh title detection">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
         </button>
       </div>
-      <div class="video-info">
-        <svg class="youtube-badge-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-        </svg>
-        <div id="videoTitle" class="video-title empty">Detecting YouTube video...</div>
+
+      <div class="video-info-box">
+        <div class="youtube-thumb-placeholder">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </div>
+        <div class="video-details">
+          <div id="videoTitle" class="video-title empty">Detecting YouTube video...</div>
+          <div class="video-subtitle">YouTube tab · Just checked</div>
+        </div>
       </div>
 
       <!-- AI Classification Result Container -->
       <div id="classificationBox" class="classification-box" style="display: none;">
         <div class="classification-header">
-          <span id="topicBadge" class="topic-badge">Classifying...</span>
-          <span class="ai-tag">Groq AI</span>
+          <div id="topicBadge" class="topic-badge off-topic">
+            <span class="badge-dot"></span>
+            <span class="badge-label">OFF-TOPIC</span>
+          </div>
+          <div class="groq-ai-tag">Groq AI ⚡</div>
         </div>
-        <div id="classificationReason" class="classification-reason">Evaluating video relevance...</div>
+        <div class="reason-quote-box">
+          <span id="classificationReason" class="classification-reason">Evaluating video relevance...</span>
+        </div>
       </div>
     </div>
 
     <!-- Active Session Details, Focus Analytics & Watched Videos Log -->
     <div id="activeSessionCard" class="card active-session-card" style="display: none;">
-      <div class="session-header">
-        <span class="session-tag">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          Active Goal
-        </span>
+      <div class="card-header-row">
+        <div class="card-title-group active-goal-title">
+          <div class="check-icon-circle">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="card-title-text green-text">ACTIVE GOAL</span>
+        </div>
+        <span id="sessionTimeText" class="started-pill">Started just now</span>
       </div>
-      <div id="activeGoalText" class="session-goal-text">--</div>
+
+      <div id="activeGoalText" class="active-goal-heading">--</div>
 
       <!-- Focus Score & Statistics Bar -->
       <div class="stats-section">
         <div class="stats-header">
-          <span>Focus Score</span>
+          <span class="stats-label">Focus Score</span>
           <span id="focusScoreText" class="score-percent">100%</span>
         </div>
         <div class="progress-bar-bg">
@@ -103,12 +160,12 @@
         </div>
         <div class="stats-counters">
           <div class="stat-pill on-topic">
-            <span class="stat-dot"></span>
-            <span id="onTopicCount">0</span> On-Topic
+            <span class="stat-dot green"></span>
+            <span class="pill-text"><strong id="onTopicCount">0</strong> On-Topic</span>
           </div>
           <div class="stat-pill off-topic">
-            <span class="stat-dot"></span>
-            <span id="offTopicCount">0</span> Off-Topic
+            <span class="stat-dot red"></span>
+            <span class="pill-text"><strong id="offTopicCount">0</strong> Off-Topic</span>
           </div>
         </div>
       </div>
@@ -116,9 +173,15 @@
       <!-- Expandable Watched Videos History List -->
       <div class="history-container">
         <button id="toggleHistoryBtn" class="toggle-history-btn">
-          <span>Session Video History</span>
-          <svg id="historyChevron" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          <div class="toggle-left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Session Video History</span>
+          </div>
+          <svg id="historyChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </button>
         <div id="historyList" class="history-list" style="display: none;">
@@ -126,12 +189,9 @@
         </div>
       </div>
 
-      <div class="session-footer">
-        <span id="sessionTimeText" class="session-time">Started just now</span>
-        <div class="session-actions">
-          <button id="endSessionBtn" class="btn-end-session">End Session</button>
-          <button id="clearBtn" class="btn-secondary">Clear</button>
-        </div>
+      <div class="session-footer-actions">
+        <button id="endSessionBtn" class="btn-end-session">End Session</button>
+        <button id="clearBtn" class="btn-secondary-outline">Clear</button>
       </div>
     </div>
 
@@ -144,7 +204,7 @@
           </svg>
           Session Summary
         </span>
-        <button id="closeSummaryBtn" class="refresh-btn" title="Close summary">✕</button>
+        <button id="closeSummaryBtn" class="close-btn" title="Close summary">✕</button>
       </div>
 
       <div class="summary-stats-grid">
@@ -166,6 +226,17 @@
         💡 <span id="sumObservation">Generating AI Session Insight...</span>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="footer-dot"></span>
+        <span>Protection Active</span>
+      </div>
+      <div class="footer-right">
+        <span>v2.4.0</span>
+      </div>
+    </footer>
   </div>
 
   <!-- Notification Toast -->

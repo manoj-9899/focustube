@@ -4,27 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FocusTube - Weekly Focus Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0b0f19;
-      --card-bg: rgba(22, 30, 46, 0.7);
+      --bg-color: #080b13;
+      --card-bg: rgba(16, 22, 36, 0.75);
       --card-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(10, 14, 24, 0.85);
+      
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --accent-red: #ef4444;
+      
+      --accent-red: #ff2a55;
       --accent-green: #10b981;
-      --accent-purple: #a855f7;
+      --accent-green-light: #34d399;
+      --accent-yellow: #f59e0b;
       --accent-blue: #38bdf8;
-      --radius-md: 16px;
+      --accent-purple: #a855f7;
+
+      --radius-lg: 18px;
+      --radius-md: 14px;
       --radius-sm: 10px;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace, sans-serif;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: var(--font-sans);
     }
 
     body {
@@ -34,14 +47,17 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 42, 85, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
     }
 
     .dashboard-container {
-      max-width: 900px;
+      max-width: 1060px;
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 24px;
     }
 
     /* Header */
@@ -49,36 +65,45 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-bottom: 16px;
+      padding-bottom: 20px;
       border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
-    .brand {
+    .brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
     .brand-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #ff334b 0%, #d90429 100%);
-      border-radius: var(--radius-sm);
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #ff2a55 0%, #d90429 100%);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(255, 42, 85, 0.35);
     }
 
     .brand-icon svg {
       width: 22px;
       height: 22px;
-      fill: white;
+      fill: #ffffff;
     }
 
     .brand-text {
       display: flex;
       flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .brand-title {
@@ -87,8 +112,28 @@
       letter-spacing: -0.4px;
     }
 
-    .brand-title span {
-      color: #ff4d4d;
+    .brand-title .highlight { color: var(--accent-red); }
+    .brand-title .sub-title { color: var(--text-muted); font-weight: 600; }
+
+    .live-tracking-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
     }
 
     .brand-subtitle {
@@ -96,156 +141,463 @@
       color: var(--text-muted);
     }
 
-    .btn-outline {
-      background: rgba(255, 255, 255, 0.05);
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .health-badge-card {
+      background: rgba(20, 27, 44, 0.6);
       border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 10px 16px;
       border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .health-info {
+      display: flex;
+      flex-direction: column;
+      text-align: right;
+    }
+
+    .health-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+    }
+
+    .health-val {
       font-size: 13px;
+      font-weight: 800;
+      color: var(--accent-green-light);
+    }
+
+    .grade-badge {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green-light);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .time-toggle-group {
+      display: flex;
+      background: rgba(20, 27, 44, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+    }
+
+    .time-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
       transition: all 0.2s;
     }
 
-    .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.12);
+    .time-btn.active {
+      background: var(--accent-red);
+      color: #ffffff;
     }
 
-    /* Section Cards */
-    .section-card {
+    .btn-open-yt {
+      background: var(--accent-red);
+      color: #ffffff;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(255, 42, 85, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-open-yt:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* 4 Stat Cards Row */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat-card {
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
-      padding: 24px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .section-header {
+    .stat-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .stat-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .stat-card-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-card-icon.green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); }
+    .stat-card-icon.blue { background: rgba(56, 189, 248, 0.12); color: var(--accent-blue); }
+    .stat-card-icon.red { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+    .stat-card-icon.yellow { background: rgba(245, 158, 11, 0.12); color: var(--accent-yellow); }
+
+    .stat-card-val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .stat-card-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .stat-card-subval {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .stat-card-footer {
+      font-size: 11px;
+      color: var(--text-dim);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+    }
+
+    .mini-bar-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      width: 68%;
+    }
+
+    .pill-badge-sm {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .pill-badge-sm.blue { background: rgba(56, 189, 248, 0.12); color: var(--accent-blue); }
+    .pill-badge-sm.green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green-light); }
+    .pill-badge-sm.red { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+    .pill-badge-sm.yellow { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Main Section Cards */
+    .section-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .section-title {
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -0.2px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
+
+    .section-title-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-title-icon.blue { background: rgba(56, 189, 248, 0.12); color: var(--accent-blue); }
+    .section-title-icon.purple { background: rgba(168, 85, 247, 0.12); color: var(--accent-purple); }
 
     .section-subtitle {
       font-size: 12px;
       color: var(--text-dim);
     }
 
-    /* Weekly Focus Score HTML/CSS Bar Chart */
-    .chart-container {
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.green { background-color: var(--accent-green); }
+    .legend-dot.red { background-color: var(--accent-red); }
+
+    /* Chart Container & Stacked Bars */
+    .chart-wrapper {
+      position: relative;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
+      gap: 12px;
+      height: 200px;
+      padding: 20px 40px 10px 10px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .y-axis-labels {
+      position: absolute;
+      right: 0;
+      top: 15px;
+      bottom: 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
       gap: 16px;
-      height: 180px;
-      padding-top: 24px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--card-border);
     }
 
     .chart-bar-group {
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       height: 100%;
       justify-content: flex-end;
       gap: 8px;
+      flex: 1;
+      max-width: 54px;
     }
 
-    .bar-value {
+    .bar-top-percent {
       font-size: 11px;
       font-weight: 700;
-      color: var(--text-muted);
+      color: var(--accent-green-light);
     }
 
-    .bar-track {
-      width: 100%;
-      max-width: 44px;
-      height: 100%;
+    .stacked-bar-track {
+      width: 32px;
+      height: 140px;
       background: rgba(255, 255, 255, 0.04);
-      border-radius: 8px 8px 0 0;
+      border-radius: 10px;
       display: flex;
-      align-items: flex-end;
+      flex-direction: column-reverse;
       overflow: hidden;
-      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    .bar-fill {
+    .bar-segment-off {
       width: 100%;
-      border-radius: 8px 8px 0 0;
-      transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      background: linear-gradient(180deg, #ff2a55 0%, #e11d48 100%);
+      transition: height 0.5s ease;
     }
 
-    .bar-fill.high { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
-    .bar-fill.mid { background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); }
-    .bar-fill.low { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+    .bar-segment-on {
+      width: 100%;
+      background: linear-gradient(180deg, #10b981 0%, #34d399 100%);
+      transition: height 0.5s ease;
+    }
 
-    .bar-label {
+    .bar-bottom-labels {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .bar-session-id {
+      font-family: var(--font-mono);
       font-size: 11px;
-      color: var(--text-dim);
-      font-weight: 600;
-      white-space: nowrap;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    /* Session History Cards */
+    .bar-goal-name {
+      font-size: 10px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60px;
+      text-align: center;
+    }
+
+    /* Past Session Summaries */
+    .filter-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(20, 27, 44, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+    }
+
+    .filter-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-pill.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
     .history-grid {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .session-card {
-      background: rgba(15, 23, 42, 0.6);
+    .session-summary-card {
+      background: rgba(12, 17, 29, 0.6);
       border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      padding: 18px;
+      border-radius: var(--radius-md);
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      transition: border-color 0.2s;
+      gap: 14px;
+      transition: border-color 0.2s, transform 0.2s;
     }
 
-    .session-card:hover {
-      border-color: rgba(255, 255, 255, 0.18);
+    .session-summary-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
     }
 
     .session-card-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
     }
 
-    .session-goal-info {
+    .session-goal-box {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .session-goal-title {
-      font-size: 15px;
+    .session-goal-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .session-goal-mono {
+      font-family: var(--font-mono);
+      font-size: 16px;
       font-weight: 700;
       color: var(--text-main);
+      letter-spacing: -0.3px;
     }
 
-    .session-meta {
+    .status-tag {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .status-tag.target-met { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-tag.disciplined { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .status-tag.needs-review { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .session-date-meta {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -253,55 +605,143 @@
       color: var(--text-dim);
     }
 
-    .score-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 12px;
+    .score-badge-pill {
+      padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    .score-badge.high { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .score-badge.mid { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .score-badge.low { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .score-badge-pill.high {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
 
-    .session-stats-row {
+    .score-badge-pill.mid {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .score-badge-pill.low {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .session-metrics-row {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.03);
-      padding: 10px 14px;
-      border-radius: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .stat-item {
-      display: flex;
+    .metric-pill {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      background: rgba(20, 27, 44, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
     }
 
-    .stat-label { color: var(--text-dim); }
-    .stat-val { font-weight: 700; color: var(--text-main); }
+    .metric-pill.green-dot .metric-dot { background-color: var(--accent-green); }
+    .metric-pill.red-dot .metric-dot { background-color: var(--accent-red); }
 
-    .observation-box {
-      font-size: 13px;
-      color: var(--text-muted);
+    .metric-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .metric-pill strong { color: var(--text-main); }
+    .metric-pill strong.red-text { color: #f87171; }
+    .metric-pill strong.yellow-text { color: var(--accent-yellow); }
+
+    .groq-insight-box {
+      background: rgba(15, 20, 32, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #cbd5e1;
       line-height: 1.5;
-      background: rgba(168, 85, 247, 0.08);
-      border-left: 3px solid var(--accent-purple);
-      padding: 10px 14px;
-      border-radius: 0 8px 8px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .insight-bulb {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .insight-text strong {
+      color: var(--accent-purple);
+      margin-right: 4px;
     }
 
     .empty-history {
       text-align: center;
       padding: 40px;
       color: var(--text-dim);
-      font-size: 14px;
+      font-size: 13px;
+    }
+
+    /* Footer */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-tip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tip-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-right-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .csv-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .csv-link:hover {
+      color: var(--text-main);
     }
   </style>
 </head>
@@ -309,59 +749,221 @@
   <div class="dashboard-container">
     <!-- Header -->
     <header>
-      <div class="brand">
+      <div class="brand-group">
         <div class="brand-icon">
-          <img src="icons/icon-48.png" width="28" height="28" alt="FocusTube Logo">
+          <svg viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
         </div>
         <div class="brand-text">
-          <div class="brand-title">Focus<span>Tube</span> Dashboard</div>
-          <div class="brand-subtitle">Weekly Focus Analytics & History</div>
+          <div class="brand-title-row">
+            <div class="brand-title">Focus<span class="highlight">Tube</span> <span class="sub-title">Dashboard</span></div>
+            <div class="live-tracking-badge">
+              <span class="live-dot"></span>
+              <span>Live Tracking</span>
+            </div>
+          </div>
+          <div class="brand-subtitle">Weekly Focus Analytics & Groq AI Session Insights</div>
         </div>
       </div>
-      <a href="https://www.youtube.com" target="_blank" class="btn-outline">
-        <span>Open YouTube</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-        </svg>
-      </a>
+
+      <div class="header-controls">
+        <div class="health-badge-card">
+          <div class="health-info">
+            <span class="health-label">CURRENT HEALTH</span>
+            <span class="health-val" id="currentHealthVal">78% Overall Focus</span>
+          </div>
+          <span class="grade-badge" id="currentHealthGrade">A-</span>
+        </div>
+
+        <div class="time-toggle-group">
+          <button class="time-btn active">7 Days</button>
+          <button class="time-btn">30 Days</button>
+          <button class="time-btn">All Time</button>
+        </div>
+
+        <a href="https://www.youtube.com" target="_blank" class="btn-open-yt">
+          <span>Open YouTube</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+      </div>
     </header>
+
+    <!-- 4 Stat Cards Row -->
+    <div class="stat-cards-grid">
+      <!-- Card 1: AVG FOCUS SCORE -->
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <span class="stat-card-label">AVG FOCUS SCORE</span>
+          <div class="stat-card-icon green">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card-val-row">
+          <span class="stat-card-val" id="avgScoreVal">68%</span>
+          <span class="stat-card-subval">+12% vs last week</span>
+        </div>
+        <div class="mini-bar-bg">
+          <div class="mini-bar-fill" id="avgScoreBar" style="width: 68%;"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: TOTAL STUDY TIME -->
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <span class="stat-card-label">TOTAL STUDY TIME</span>
+          <div class="stat-card-icon blue">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card-val-row">
+          <span class="stat-card-val" id="totalTimeVal">14h 25m</span>
+        </div>
+        <div class="stat-card-footer">
+          <span id="sessionsCountText">Across 18 sessions</span>
+          <span class="pill-badge-sm blue" id="avgSessionTimePill">48m avg / session</span>
+        </div>
+      </div>
+
+      <!-- Card 3: VIDEOS FILTERED -->
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <span class="stat-card-label">VIDEOS FILTERED</span>
+          <div class="stat-card-icon red">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card-val-row">
+          <span class="stat-card-val" id="totalVideosVal">84</span>
+          <span style="font-size: 11px; color: var(--text-dim);">analyzed</span>
+        </div>
+        <div class="stat-card-footer">
+          <span class="pill-badge-sm green" id="onTopicPill">58 On-Topic</span>
+          <span class="pill-badge-sm red" id="offTopicPill">26 Intercepted</span>
+        </div>
+      </div>
+
+      <!-- Card 4: TOP DISTRACTION -->
+      <div class="stat-card" id="topDistractionCard">
+        <div class="stat-card-top">
+          <span class="stat-card-label">TOP DISTRACTION</span>
+          <div class="stat-card-icon yellow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; margin-top: 4px;">
+          <span class="pill-badge-sm yellow" id="topDistractionPill">Tech News & Gaming</span>
+        </div>
+        <div class="stat-card-footer">
+          <span id="topDistractionSub">Caused 62% of distracted detours</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Weekly Focus Score Trend Chart (Last 7 Sessions) -->
     <div class="section-card">
-      <div class="section-header">
-        <div>
+      <div class="section-header-row">
+        <div class="section-title-group">
           <div class="section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#38BDF8">
-              <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
-            </svg>
+            <div class="section-title-icon blue">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="12" width="4" height="8"></rect>
+                <rect x="10" y="8" width="4" height="12"></rect>
+                <rect x="17" y="4" width="4" height="16"></rect>
+              </svg>
+            </div>
             Weekly Focus Trend (Last 7 Sessions)
           </div>
-          <div class="section-subtitle">Visual score history per study session</div>
+          <div class="section-subtitle">Dual-distribution breakdown of On-Topic learning time vs Off-Topic detours</div>
+        </div>
+
+        <div class="legend-row">
+          <div class="legend-item">
+            <span class="legend-dot green"></span>
+            <span>On-Topic (Focus)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot red"></span>
+            <span>Distraction (Off-Topic)</span>
+          </div>
         </div>
       </div>
 
-      <div id="chartContainer" class="chart-container">
-        <!-- Bars dynamically populated by dashboard.js -->
-        <div class="empty-history">Loading focus trend chart...</div>
+      <div class="chart-wrapper">
+        <div id="chartContainer" class="chart-container">
+          <!-- Dynamically populated by dashboard.js -->
+        </div>
+        <div class="y-axis-labels">
+          <span>100%</span>
+          <span>75%</span>
+          <span>50%</span>
+          <span>25%</span>
+          <span>0%</span>
+        </div>
       </div>
     </div>
 
     <!-- Past Sessions History Cards -->
     <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#A855F7">
-            <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
-          </svg>
-          Past Session Summaries
+      <div class="section-header-row">
+        <div class="section-title-group">
+          <div class="section-title">
+            <div class="section-title-icon purple">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            Past Session Summaries
+          </div>
+          <div class="section-subtitle">Contextual breakdown with autonomous Groq AI feedback</div>
+        </div>
+
+        <div class="filter-pills-row">
+          <button class="filter-pill active">All Sessions (3)</button>
+          <button class="filter-pill" style="color: var(--accent-green-light);">• High Focus (>70%)</button>
+          <button class="filter-pill" style="color: #f87171;">• Distracted (<50%)</button>
         </div>
       </div>
 
       <div id="historyGrid" class="history-grid">
-        <!-- History cards dynamically populated by dashboard.js -->
+        <!-- Dynamically populated by dashboard.js -->
         <div class="empty-history">Loading session history...</div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-tip">
+        <div class="tip-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <span><strong>Pro Tip:</strong> Sessions under strict playlist mode show an average focus increase of <strong>+34%</strong>.</span>
+      </div>
+      <div class="footer-right-links">
+        <span>FocusTube AI v2.4</span>
+        <span>•</span>
+        <a href="#" class="csv-link">Export CSV</a>
+      </div>
+    </footer>
   </div>
 
   <script src="dashboard.js"></script>
