@@ -320,7 +320,7 @@ async function classifyCurrentVideo(force = false) {
   lastClassifiedKey = cacheKey;
 
   try {
-    const response = await fetch('http://localhost:3000/classify', {
+    const response = await fetch('https://focustube-n73c.onrender.com/classify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ goal: sessionGoal, videoTitle })

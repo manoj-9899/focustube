@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     classificationReason.textContent = 'Evaluating relevance...';
 
     try {
-      const response = await fetch('http://localhost:3000/classify', {
+      const response = await fetch('https://focustube-n73c.onrender.com/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goal, videoTitle })
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       let summaryResult = null;
       try {
-        const response = await fetch('http://localhost:3000/summarize', {
+        const response = await fetch('https://focustube-n73c.onrender.com/summarize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
