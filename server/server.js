@@ -31,6 +31,20 @@ function pruneCacheIfNeeded() {
   }
 }
 
+// Fallback keyword comparison logic
+function keywordClassify(goal, videoTitle) {
+  const goalWords = goal.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const titleLower = videoTitle.toLowerCase();
+  const isMatch = goalWords.some(word => titleLower.includes(word));
+  
+  return {
+    status: isMatch ? 'on-topic' : 'off-topic',
+    reason: isMatch 
+      ? 'Video title matches session goal keywords' 
+      : 'Video title does not appear directly related to goal'
+  };
+}
+
 // Classification Endpoint
 app.post('/classify', async (req, res) => {
   try {
@@ -55,22 +69,9 @@ app.post('/classify', async (req, res) => {
     }
 
     if (!apiKey || apiKey === 'your_groq_api_key_here' || apiKey === 'dummy-key') {
-      console.warn('Warning: GROQ_API_KEY is not configured in .env. Using fallback keyword comparison.');
-      
-      const goalWords = cleanGoal.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-      const titleLower = cleanTitle.toLowerCase();
-      const isMatch = goalWords.some(word => titleLower.includes(word));
-      
-      const result = {
-        status: isMatch ? 'on-topic' : 'off-topic',
-        reason: isMatch 
-          ? 'Video title matches goal keywords' 
-          : 'Video title does not appear related to goal'
-      };
-
+      const result = keywordClassify(cleanGoal, cleanTitle);
       classificationCache.set(cacheKey, result);
       pruneCacheIfNeeded();
-
       return res.json({ ...result, cached: false });
     }
 
@@ -86,7 +87,6 @@ Respond strictly with a valid JSON object in this format:
 
     let chatCompletion = null;
     let usedModel = null;
-    let lastError = null;
 
     for (const modelCandidate of MODELS) {
       try {
@@ -102,44 +102,36 @@ Respond strictly with a valid JSON object in this format:
         break;
       } catch (err) {
         console.warn(`Model ${modelCandidate} failed (${err.message}). Trying next...`);
-        lastError = err;
       }
     }
 
-    if (!chatCompletion) {
-      throw lastError || new Error('All Groq model attempts failed.');
+    if (chatCompletion) {
+      const rawContent = chatCompletion.choices[0]?.message?.content;
+      try {
+        const parsed = JSON.parse(rawContent);
+        const result = {
+          status: parsed.status || 'on-topic',
+          reason: parsed.reason || 'Classification complete',
+          modelUsed: usedModel
+        };
+        classificationCache.set(cacheKey, result);
+        pruneCacheIfNeeded();
+        return res.json({ ...result, cached: false });
+      } catch (pErr) {
+        // Fallback on JSON parse failure
+      }
     }
 
-    const rawContent = chatCompletion.choices[0]?.message?.content;
-    let parsedResult;
-
-    try {
-      parsedResult = JSON.parse(rawContent);
-    } catch (parseErr) {
-      console.error('JSON Parse error from Groq response:', rawContent);
-      parsedResult = {
-        status: 'on-topic',
-        reason: 'Classification completed'
-      };
-    }
-
-    const result = {
-      status: parsedResult.status || 'on-topic',
-      reason: parsedResult.reason || 'Classification completed',
-      modelUsed: usedModel
-    };
-
-    classificationCache.set(cacheKey, result);
+    // High-availability fallback if Groq models fail or encounter API issues
+    const fallbackResult = keywordClassify(cleanGoal, cleanTitle);
+    classificationCache.set(cacheKey, fallbackResult);
     pruneCacheIfNeeded();
-
-    return res.json({ ...result, cached: false });
+    return res.json({ ...fallbackResult, cached: false });
 
   } catch (error) {
     console.error('Error in /classify endpoint:', error.message);
-    return res.status(500).json({
-      error: 'Failed to classify video',
-      details: error.message
-    });
+    const fallbackResult = keywordClassify(req.body.goal || '', req.body.videoTitle || '');
+    return res.json({ ...fallbackResult, cached: false });
   }
 });
 
@@ -162,14 +154,18 @@ app.post('/summarize', async (req, res) => {
 
     const durationText = `${Math.max(1, Math.round(durationMinutes))} mins`;
 
-    if (!apiKey || apiKey === 'your_groq_api_key_here' || apiKey === 'dummy-key') {
+    const generateLocalSummary = () => {
       const topDistraction = offTopicVideos.length > 0 ? 'General Entertainment' : 'None';
-      return res.json({
+      return {
         totalTime: durationText,
         focusScore: calculatedScore,
         topDistractionCategory: topDistraction,
         observation: `You watched ${onTopicVideos.length} on-topic video(s) out of ${totalVideos} total. ${calculatedScore >= 80 ? 'Great job staying focused!' : 'Keep pushing for higher focus next session.'}`
-      });
+      };
+    };
+
+    if (!apiKey || apiKey === 'your_groq_api_key_here' || apiKey === 'dummy-key') {
+      return res.json(generateLocalSummary());
     }
 
     const systemPrompt = `You are an encouraging AI focus coach for YouTube. Given a user's session goal, duration, and list of watched videos with their statuses, generate a structured session summary.
@@ -189,7 +185,6 @@ Off-Topic Videos (${offTopicVideos.length}): ${JSON.stringify(offTopicVideos.map
 
     let chatCompletion = null;
     let usedModel = null;
-    let lastError = null;
 
     for (const modelCandidate of MODELS) {
       try {
@@ -205,42 +200,36 @@ Off-Topic Videos (${offTopicVideos.length}): ${JSON.stringify(offTopicVideos.map
         break;
       } catch (err) {
         console.warn(`Summarize model ${modelCandidate} failed (${err.message}). Trying next...`);
-        lastError = err;
       }
     }
 
-    if (!chatCompletion) {
-      throw lastError || new Error('All Groq model attempts failed for summary.');
+    if (chatCompletion) {
+      const rawContent = chatCompletion.choices[0]?.message?.content;
+      try {
+        const parsedSummary = JSON.parse(rawContent);
+        return res.json({
+          totalTime: parsedSummary.totalTime || durationText,
+          focusScore: typeof parsedSummary.focusScore === 'number' ? parsedSummary.focusScore : calculatedScore,
+          topDistractionCategory: parsedSummary.topDistractionCategory || (offTopicVideos.length > 0 ? 'Entertainment' : 'None'),
+          observation: parsedSummary.observation || `Good effort studying! Focus score reached ${calculatedScore}%.`,
+          modelUsed: usedModel
+        });
+      } catch (pErr) {
+        // Fallback on JSON parse failure
+      }
     }
 
-    const rawContent = chatCompletion.choices[0]?.message?.content;
-    let parsedSummary;
-
-    try {
-      parsedSummary = JSON.parse(rawContent);
-    } catch (parseErr) {
-      console.error('JSON Parse error from Groq summarize response:', rawContent);
-      parsedSummary = {
-        totalTime: durationText,
-        focusScore: calculatedScore,
-        topDistractionCategory: offTopicVideos.length > 0 ? 'Off-Topic Content' : 'None',
-        observation: `Completed session with ${calculatedScore}% focus rate.`
-      };
-    }
-
-    return res.json({
-      totalTime: parsedSummary.totalTime || durationText,
-      focusScore: typeof parsedSummary.focusScore === 'number' ? parsedSummary.focusScore : calculatedScore,
-      topDistractionCategory: parsedSummary.topDistractionCategory || (offTopicVideos.length > 0 ? 'Entertainment' : 'None'),
-      observation: parsedSummary.observation || `Good effort studying! Focus score reached ${calculatedScore}%.`,
-      modelUsed: usedModel
-    });
+    return res.json(generateLocalSummary());
 
   } catch (error) {
     console.error('Error in /summarize endpoint:', error.message);
-    return res.status(500).json({
-      error: 'Failed to generate session summary',
-      details: error.message
+    const durationMinutes = req.body.durationMinutes || 0;
+    const durationText = `${Math.max(1, Math.round(durationMinutes))} mins`;
+    return res.json({
+      totalTime: durationText,
+      focusScore: 100,
+      topDistractionCategory: 'None',
+      observation: 'Session completed successfully.'
     });
   }
 });
