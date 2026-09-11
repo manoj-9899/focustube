@@ -21,6 +21,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const classificationBox = document.getElementById('classificationBox');
   const topicBadge = document.getElementById('topicBadge');
   const classificationReason = document.getElementById('classificationReason');
+  const clearGoalInputBtn = document.getElementById('clearGoalInputBtn');
+
+  if (clearGoalInputBtn && goalInput) {
+    goalInput.addEventListener('input', () => {
+      clearGoalInputBtn.style.display = goalInput.value.length > 0 ? 'block' : 'none';
+    });
+    clearGoalInputBtn.addEventListener('click', () => {
+      goalInput.value = '';
+      clearGoalInputBtn.style.display = 'none';
+      goalInput.focus();
+    });
+  }
 
   // Analytics & History elements
   const focusScoreText = document.getElementById('focusScoreText');
@@ -234,6 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentGoal = data.sessionGoal;
         currentStartTime = data.sessionStartTime;
         goalInput.value = data.sessionGoal;
+        if (clearGoalInputBtn) clearGoalInputBtn.style.display = 'block';
         activeGoalText.textContent = data.sessionGoal;
         sessionTimeText.textContent = formatRelativeTime(data.sessionStartTime);
         activeSessionCard.style.display = 'block';
@@ -242,6 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         currentGoal = null;
         currentStartTime = null;
+        if (clearGoalInputBtn) clearGoalInputBtn.style.display = 'none';
         activeSessionCard.style.display = 'none';
         startBtn.querySelector('span').textContent = 'Start Session';
         classificationBox.style.display = 'none';
