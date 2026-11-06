@@ -805,3 +805,108 @@ header {
 .toast.show {
   transform: translateX(-50%) translateY(0);
 }
+
+/* Focus Options & Custom Switch */
+.focus-shield-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.focus-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  transition: background 0.2s;
+}
+
+.focus-option-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.focus-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.focus-switch-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.focus-switch-slider {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.focus-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.focus-switch-label input:checked + .focus-switch-slider {
+  background: linear-gradient(135deg, #ff2a55 0%, #a855f7 100%);
+}
+
+.focus-switch-label input:checked + .focus-switch-slider:before {
+  transform: translateX(12px);
+}
+
+.focus-switch-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.focus-switch-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(255, 42, 85, 0.12);
+  color: #ff6b8b;
+  border: 1px solid rgba(255, 42, 85, 0.25);
+}
+
+.focus-switch-badge.green-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.focus-switch-badge.purple-badge {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+

@@ -9,6 +9,9 @@ node_modules/
 *.log
 npm-debug.log*
 
+# Packages & Archives
+*.zip
+
 # System
 .DS_Store
 Thumbs.db

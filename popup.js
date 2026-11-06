@@ -22,6 +22,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   const topicBadge = document.getElementById('topicBadge');
   const classificationReason = document.getElementById('classificationReason');
   const clearGoalInputBtn = document.getElementById('clearGoalInputBtn');
+  const blockShortsToggle = document.getElementById('blockShortsToggle');
+  const zenModeToggle = document.getElementById('zenModeToggle');
+  const hideCommentsToggle = document.getElementById('hideCommentsToggle');
+
+  // Initialize Shorts Blocker toggle setting
+  if (blockShortsToggle) {
+    try {
+      const { blockShorts } = await chrome.storage.local.get(['blockShorts']);
+      blockShortsToggle.checked = blockShorts !== false; // default true
+      blockShortsToggle.addEventListener('change', async () => {
+        await chrome.storage.local.set({ blockShorts: blockShortsToggle.checked });
+        showToast(blockShortsToggle.checked ? 'Shorts blocker enabled' : 'Shorts blocker disabled');
+      });
+    } catch (e) {}
+  }
+
+  // Initialize Zen Mode toggle setting
+  if (zenModeToggle) {
+    try {
+      const { zenMode } = await chrome.storage.local.get(['zenMode']);
+      zenModeToggle.checked = zenMode !== false; // default true
+      zenModeToggle.addEventListener('change', async () => {
+        await chrome.storage.local.set({ zenMode: zenModeToggle.checked });
+        showToast(zenModeToggle.checked ? 'Zen Mode enabled' : 'Zen Mode disabled');
+      });
+    } catch (e) {}
+  }
+
+  // Initialize Hide Comments toggle setting
+  if (hideCommentsToggle) {
+    try {
+      const { hideComments } = await chrome.storage.local.get(['hideComments']);
+      hideCommentsToggle.checked = hideComments !== false; // default true
+      hideCommentsToggle.addEventListener('change', async () => {
+        await chrome.storage.local.set({ hideComments: hideCommentsToggle.checked });
+        showToast(hideCommentsToggle.checked ? 'Comments hidden' : 'Comments visible');
+      });
+    } catch (e) {}
+  }
 
   if (clearGoalInputBtn && goalInput) {
     goalInput.addEventListener('input', () => {

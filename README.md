@@ -22,6 +22,8 @@ YouTube is one of the greatest learning platforms in the world—and also the bi
 ## ✨ Features
 
 - 🎯 **Session Goal Setting**: Define what you want to learn before starting your YouTube session.
+- 🛡️ **YouTube Shorts Interception & Shield**: Automatically detects and pauses addictive Shorts, hides homepage Shorts carousels, and prompts you to return to your learning goal with options for a 60s break or instant goal search.
+- 🧘 **Zen Mode & Distraction Masking**: Filters out algorithmic sidebar video recommendations, distracting comments, and video end-screen cards during study sessions, replacing them with a sleek Focus Shield and interactive "Peek" option.
 - 🤖 **Groq AI Real-Time Classification**: Sub-second LLM classification determining if videos are `On-Topic` or `Off-Topic`.
 - ⚠️ **In-Page Floating Warning Banners**: Non-intrusive floating badges positioned safely below the YouTube header with 10s auto-dismiss and explicit **Dismiss** controls.
 - ⏰ **2-Minute Smart Distraction Alert**: Pulsing notification triggered if an off-topic video plays past 2 minutes.
